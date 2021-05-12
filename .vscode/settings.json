@@ -8,5 +8,8 @@
     "typescript",
     "typescriptreact"
   ],
-  "standard.engine": "standard"
+  "standard.engine": "standard",
+  "files.associations": {
+    "*.js": "javascriptreact"
+  }
 }
