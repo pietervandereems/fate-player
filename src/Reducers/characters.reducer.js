@@ -16,6 +16,9 @@ const reducer = (state = [], action) => {
       }
       return state
     }
+    case 'INITIALIZE': {
+      return action.data
+    }
     default:
       return state
   }
@@ -25,6 +28,13 @@ export const dbUpdate = (doc) => dispatch => {
   dispatch({
     type: 'DBUPDATE',
     data: doc
+  })
+}
+
+export const initialize = (docs) => dispatch => {
+  dispatch({
+    type: 'INITIALIZE',
+    data: docs.filter((doc) => doc.type === 'character')
   })
 }
 

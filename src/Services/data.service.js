@@ -1,8 +1,22 @@
 import PouchDB from 'pouchdb'
 import { db } from '../Utils/config'
 import * as character from '../Reducers/characters.reducer'
+import { logout } from '../Reducers/user.reducer'
 
-let userDB
+const stateUpdater = ({ db, dispatch }) => ({ type = '', stateUpdater }) => {
+  db.allDocs({
+    include_docs: true,
+    attachments: true,
+    startkey: type,
+    endkey: `${type}\ufff0`
+  })
+    .then((result) => {
+      dispatch(stateUpdater(result.rows.map(row => row.doc)))
+    })
+    .catch((err) => {
+      console.error('Error caught retrieving all character docs', { err })
+    })
+}
 
 export const connect = (user) => async (dispatch) => {
   if (user != null && !Array.isArray(user)) {
@@ -12,30 +26,49 @@ export const connect = (user) => async (dispatch) => {
         return PouchDB.fetch(url, opts)
       }
     })
-    userDB = new PouchDB(`fate-player%2F${user.username}`)
-    PouchDB.sync(serverDB, userDB, { live: true, retry: true })
-      .on('change', (info) => {
-        if (info.change.ok) {
-          info.change.docs.forEach((doc) => {
-            switch (doc.type) {
-              case 'character':
-                return dispatch(character.dbUpdate(doc))
-              default:
-                console.log('unknown update', info.doc)
+    const userDB = new PouchDB(`fate-player%2F${user.username}`)
+    const updateState = stateUpdater({ db: userDB, dispatch })
+
+    userDB.replicate.from(serverDB)
+      .on('complete', (info) => {
+        if (info.ok) {
+          updateState({ type: 'character_', stateUpdater: character.initialize })
+        } else {
+          console.error('Initial replication did not return ok', { info })
+        }
+
+        PouchDB.sync(serverDB, userDB, { live: true, retry: true })
+          .on('change', (info) => {
+            if (info.change.ok) {
+              info.change.docs.forEach((doc) => {
+                switch (doc.type) {
+                  case 'character':
+                    return dispatch(character.dbUpdate(doc))
+                  default:
+                    console.log('unknown update', info.doc)
+                }
+              })
+            }
+            console.info('Change', { info })
+          })
+          .on('paused', (_err) => {
+          })
+          .on('active', () => {
+            console.log('Sync Active')
+          })
+          .on('denied', (err) => {
+            console.log('Sync Denied', { err })
+          })
+          .on('complete', (info) => {
+            console.log('Sync Complete', { info })
+          })
+          .on('error', (err) => {
+            console.error('Sync Error', { err })
+            if (err.error === 'unauthorized') {
+              dispatch(logout())
             }
           })
-        }
-        console.log('Change', { info })
-      }).on('paused', (_err) => {
-        // console.log('Sync Paused', { err })
-      }).on('active', () => {
-        console.log('Sync Active')
-      }).on('denied', (err) => {
-        console.log('Sync Denied', { err })
-      }).on('complete', (info) => {
-        console.log('Sync Complete', { info })
-      }).on('error', (err) => {
-        console.log('Sync Error', { err })
       })
+      .on('error', (err) => console.error('Initial replication error', { err }))
   }
 }
