@@ -1,6 +1,7 @@
 import PouchDB from 'pouchdb'
 import { db } from '../Utils/config'
 import * as character from '../Reducers/characters.reducer'
+import * as games from '../Reducers/games.reducer'
 import { logout } from '../Reducers/user.reducer'
 
 const stateUpdater = ({ db, dispatch }) => ({ type = '', stateUpdater }) => {
@@ -33,6 +34,7 @@ export const connect = (user) => async (dispatch) => {
       .on('complete', (info) => {
         if (info.ok) {
           updateState({ type: 'character_', stateUpdater: character.initialize })
+          updateState({ type: 'game_', stateUpdater: games.initialize })
         } else {
           console.error('Initial replication did not return ok', { info })
         }
@@ -69,6 +71,11 @@ export const connect = (user) => async (dispatch) => {
             }
           })
       })
-      .on('error', (err) => console.error('Initial replication error', { err }))
+      .on('error', (err) => {
+        if (err.error === 'unauthorized') {
+          dispatch(logout())
+        }
+        console.error('Initial replication error', { err })
+      })
   }
 }

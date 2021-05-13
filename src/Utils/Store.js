@@ -4,11 +4,13 @@ import thunk from 'redux-thunk'
 import user from '../Reducers/user.reducer'
 import notification from '../Reducers/notification.reducer'
 import characters from '../Reducers/characters.reducer'
+import games from '../Reducers/games.reducer'
 
 const reducer = combineReducers({
   notification,
   user,
-  characters
+  characters,
+  games
 })
 
 const store = createStore(reducer, composeWithDevTools(applyMiddleware(thunk)))
