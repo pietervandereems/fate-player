@@ -5,12 +5,14 @@ import user from '../Reducers/user.reducer'
 import notification from '../Reducers/notification.reducer'
 import characters from '../Reducers/characters.reducer'
 import games from '../Reducers/games.reducer'
+import player from '../Reducers/player.reducer'
 
 const reducer = combineReducers({
   notification,
   user,
   characters,
-  games
+  games,
+  player
 })
 
 const store = createStore(reducer, composeWithDevTools(applyMiddleware(thunk)))
