@@ -3,12 +3,12 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 import thunk from 'redux-thunk'
 import user from '../Reducers/user.reducer'
 import notification from '../Reducers/notification.reducer'
-import data from '../Reducers/data.reducer'
+import characters from '../Reducers/characters.reducer'
 
 const reducer = combineReducers({
   notification,
   user,
-  data
+  characters
 })
 
 const store = createStore(reducer, composeWithDevTools(applyMiddleware(thunk)))
