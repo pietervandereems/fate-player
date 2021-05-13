@@ -11,7 +11,7 @@ const CharacterList = () => {
 
   return (
     <>
-      <h2>CharacterList</h2>
+      <h2>Character List</h2>
       Hello, These are your available characters
       <ul>
         {characters.map(character => <li key={character._id}>{character.name} ({gameNames(character.games)})</li>)}

@@ -21,6 +21,7 @@ const Nav = styled.nav`
   padding: 1rem;
 
   a {
+    color: white;
     text-decoration: none;
     font-weight: bold;
     border: 1px solid white;
